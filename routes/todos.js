@@ -36,9 +36,15 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ message: 'Todo not found' });
     }
     if (req.body.title !== undefined) {
-      todo.title = req.body.title;
+      if (typeof req.body.title !== 'string' || req.body.title.trim() === '') {
+        return res.status(400).json({ message: 'Title must be a non-empty string' });
+      }
+      todo.title = req.body.title.trim();
     }
     if (req.body.completed !== undefined) {
+      if (typeof req.body.completed !== 'boolean') {
+        return res.status(400).json({ message: 'Completed must be a boolean' });
+      }
       todo.completed = req.body.completed;
     }
     const updatedTodo = await todo.save();
