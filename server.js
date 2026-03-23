@@ -8,6 +8,21 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Root route - welcome message
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Welcome to Todo API!',
+    endpoints: {
+      'GET /api/todos': 'Get all todos',
+      'POST /api/todos': 'Create a new todo',
+      'PUT /api/todos/:id': 'Update a todo',
+      'DELETE /api/todos/:id': 'Delete a todo',
+      'GET /api/todos/suggest': 'Get motivational tip based on incomplete tasks'
+    },
+    live: 'https://todo-api-production-6295.up.railway.app'
+  });
+});
+
 // Routes
 const todoRoutes = require('./routes/todos');
 app.use('/api/todos', todoRoutes);
