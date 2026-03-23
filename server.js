@@ -99,16 +99,33 @@ const PORT = process.env.PORT || 5000;
 // Validate required environment variables
 if (!process.env.MONGO_URI) {
   console.error('ERROR: MONGO_URI environment variable is required');
-  process.exit(1);
+  console.error('Please set MONGO_URI in your environment variables');
+  if (process.env.NODE_ENV === 'production') {
+    // In production, don't exit immediately - give time to check logs
+    setTimeout(() => {
+      process.exit(1);
+    }, 5000);
+  } else {
+    process.exit(1);
+  }
 }
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('MongoDB connected successfully');
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`Server running on port ${PORT}`);
+      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
     });
   })
   .catch((err) => {
     console.log('MongoDB connection error:', err);
+    console.log('Please check your MONGO_URI environment variable');
+    if (process.env.NODE_ENV === 'production') {
+      // In production, keep trying to connect
+      console.log('Retrying connection in 5 seconds...');
+      setTimeout(() => {
+        mongoose.connect(process.env.MONGO_URI);
+      }, 5000);
+    }
   });
