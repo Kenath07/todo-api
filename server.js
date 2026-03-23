@@ -8,18 +8,21 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Root route - welcome message
+// ROOT ROUTE - MUST BE BEFORE OTHER ROUTES
 app.get('/', (req, res) => {
   res.json({
-    message: 'Welcome to Todo API!',
+    message: 'Todo API is running!',
     endpoints: {
       'GET /api/todos': 'Get all todos',
       'POST /api/todos': 'Create a new todo',
       'PUT /api/todos/:id': 'Update a todo',
       'DELETE /api/todos/:id': 'Delete a todo',
-      'GET /api/todos/suggest': 'Get motivational tip based on incomplete tasks'
+      'GET /api/todos/suggest': 'Get motivational tip'
     },
-    live: 'https://todo-api-production-6295.up.railway.app'
+    stats: {
+      incompleteTasks: 1,
+      tip: 'Focus on one task at a time!'
+    }
   });
 });
 
@@ -27,8 +30,14 @@ app.get('/', (req, res) => {
 const todoRoutes = require('./routes/todos');
 app.use('/api/todos', todoRoutes);
 
+// 404 handler for undefined routes
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
+  console.error(err.stack);
   res.status(500).json({ message: err.message });
 });
 
