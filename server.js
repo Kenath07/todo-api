@@ -29,6 +29,28 @@ app.use(express.json());
 // ROOT ROUTE - MUST BE BEFORE OTHER ROUTES
 app.get('/', async (req, res) => {
   try {
+    // Check if MongoDB is connected before trying to query
+    if (mongoose.connection.readyState !== 1) {
+      // Database not connected, return basic response
+      return res.json({
+        message: 'Todo API is running!',
+        status: 'Database connecting...',
+        endpoints: {
+          'GET /api/todos': 'Get all todos',
+          'POST /api/todos': 'Create a new todo',
+          'PUT /api/todos/:id': 'Update a todo',
+          'DELETE /api/todos/:id': 'Delete a todo',
+          'GET /api/todos/suggest': 'Get motivational tip'
+        },
+        stats: {
+          totalTasks: 0,
+          incompleteTasks: 0,
+          completedTasks: 0,
+          tip: 'Database connecting... Please wait a moment.'
+        }
+      });
+    }
+
     const Todo = require('./models/Todo');
     const incompleteTasks = await Todo.countDocuments({ completed: false });
     const totalTasks = await Todo.countDocuments();
@@ -44,6 +66,7 @@ app.get('/', async (req, res) => {
     
     res.json({
       message: 'Todo API is running!',
+      status: 'Connected',
       endpoints: {
         'GET /api/todos': 'Get all todos',
         'POST /api/todos': 'Create a new todo',
@@ -61,6 +84,7 @@ app.get('/', async (req, res) => {
   } catch (error) {
     res.json({
       message: 'Todo API is running!',
+      status: 'Database error',
       endpoints: {
         'GET /api/todos': 'Get all todos',
         'POST /api/todos': 'Create a new todo',
@@ -72,7 +96,7 @@ app.get('/', async (req, res) => {
         totalTasks: 0,
         incompleteTasks: 0,
         completedTasks: 0,
-        tip: 'Focus on one task at a time!'
+        tip: 'Database temporarily unavailable. Try /api/todos/suggest'
       }
     });
   }
